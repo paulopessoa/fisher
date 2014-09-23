@@ -61,6 +61,29 @@ module Fisher
     puts e.backtrace.inspect
   end
 
+  # Pega conteudo de links
+  def self.fish_links(url)
+    contents = URI.parse(url).read
+    i=0
+    contents.scan(/<a.+?href=\"(.+?)\"/) do |path|
+      path = path.to_s.gsub("\"","").gsub("[","").gsub("]","").gsub("\\","").to_s.strip
+
+      if (!path.scan(/\.[\w]{3}$/).empty?) #tem extensao
+        filename = path["#{path}".rindex('/')+1..-1]
+      end
+
+      if path != "#" and !path.include?("http")
+        save_url("http://www.stjunior.stj.jus.br#{path}", filename)
+        # puts path
+      end
+      i+=1
+    end
+    puts "#{i} arquivos encontrados."
+  rescue Exception => e
+    puts e.message
+    puts e.backtrace.inspect
+  end
+
 
   private
 
@@ -81,7 +104,12 @@ module Fisher
 
     open(url) do |io|
       if filename.nil?
-        filename = io.meta["content-disposition"].scan(/filename=\"(.*)\"/)[0][0]
+        if !io.meta["content-disposition"].nil?
+          filename = io.meta["content-disposition"].scan(/filename=\"(.*)\"/)[0][0]
+        else
+          puts "URL ${url} não é um arquivo."
+          return false
+        end
       end
       filename = "#{PATH_TO}#{filename}"
 
@@ -104,7 +132,7 @@ module Fisher
 end
 
 # PRINCIPAL
-Fisher.fish_file "http://www.stjunior.stj.jus.br/portal_stj/admin/fotografias/cad_fotografias_download.wsp?tmp.id=334&tmp.tamanho=amostra"
+# Fisher.fish_file "http://www.stjunior.stj.jus.br/portal_stj/admin/fotografias/cad_fotografias_download.wsp?tmp.id=334&tmp.tamanho=amostra"
 # Fisher.fish_images "http://www.stjunior.stj.jus.br/portal_stj/publicacao/engine.wsp?tmp.area=1094"
 # Fisher.fish_css "http://www.stjunior.stj.jus.br/portal_stj/site/css/18_default.css"
 # Fisher.fish_css "http://www.stjunior.stj.jus.br/portal_stj/site/css/14_default.css"
