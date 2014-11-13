@@ -107,7 +107,7 @@ module Fisher
         if !io.meta["content-disposition"].nil?
           filename = io.meta["content-disposition"].scan(/filename=\"(.*)\"/)[0][0]
         else
-          puts "URL ${url} não é um arquivo."
+          puts "URL #{url} não é um arquivo."
           return false
         end
       end
